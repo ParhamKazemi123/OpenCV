@@ -168,8 +168,6 @@ int getAverageHSV(const cv::Mat& image) {
     // Combine average HSV values into a single integer
     int hsvValue = (avgH << 16) | (avgS << 8) | avgV;
 
-    std::cout << "Number of pixels used: " << numPixels << std::endl;
-
     return hsvValue;
 }
 
@@ -217,13 +215,79 @@ cv::Mat applyMask(const cv::Mat& image, const cv::Mat& mask) {
     cv::Mat resultImage;
     cv::bitwise_and(image, image, resultImage, mask);
 
-    cv::imshow("Input Image", image);
-    cv::imshow("Result (Masked) Image", resultImage);
+    return resultImage;
+}
+
+cv::Mat identifyObject(cv::Mat image) {
+    int range = 3;
+    cv::Mat resultImage;
+    cv::Mat mask;
+
+    int hsvValue;
+    hsvValue = getAverageHSV(image);
+
+    if (hsvValue != -1) {
+        int h = (hsvValue >> 16) & 0xFF;
+        int s = (hsvValue >> 8) & 0xFF;
+        int v = hsvValue & 0xFF;
+
+        int minSat = 100, maxSat = 255;
+        int minVal = 0, maxVal = 255;
+
+        cv::Scalar lowerBound;
+        cv::Scalar upperBound;
+
+        if (h < range || h >(180 - range)) {
+
+            cv::Scalar lowerBound2;
+            cv::Scalar upperBound2;
+
+            cv::Mat mask1, mask2;
+
+            if (h < 5) {
+                int minHue1 = 0, maxHue1 = h + range;
+                int minHue2 = 179 - (range - h), maxHue2 = 180;
+
+                lowerBound = cv::Scalar(minHue1, minSat, minVal);
+                upperBound = cv::Scalar(maxHue1, maxSat, maxVal);
+
+                lowerBound2 = cv::Scalar(minHue2, minSat, minVal);
+                upperBound2 = cv::Scalar(maxHue2, maxSat, maxVal);
+            }
+            else {
+                int minHue1 = h - range, maxHue1 = 180;
+                int minHue2 = 0, maxHue2 = range - (180 - h);
+
+                lowerBound = cv::Scalar(minHue1, minSat, minVal);
+                upperBound = cv::Scalar(maxHue1, maxSat, maxVal);
+
+                lowerBound2 = cv::Scalar(minHue2, minSat, minVal);
+                upperBound2 = cv::Scalar(maxHue2, maxSat, maxVal);
+            }
+
+            mask1 = createMask(image, lowerBound, upperBound);
+            mask2 = createMask(image, lowerBound2, upperBound2);
+
+            mask = mask1 | mask2;
+
+            resultImage = applyMask(image, mask);
+        }
+        else {
+            int minHue = h - range, maxHue = h + range;
+
+            lowerBound = cv::Scalar(minHue, minSat, minVal);
+            upperBound = cv::Scalar(maxHue, maxSat, maxVal);
+
+            mask = createMask(image, lowerBound, upperBound);
+
+            resultImage = applyMask(image, mask);
+        }
+    }
 
     return resultImage;
 }
 
-int identifyObject(cv::Mat image) {
+int identifyObjectTest(cv::Mat image) {
     int range = 3; 
     cv::Mat resultImage;
     cv::Mat mask;
@@ -299,6 +363,9 @@ int identifyObject(cv::Mat image) {
             mask = mask1 | mask2;
 
             resultImage = applyMask(image, mask);
+
+            cv::imshow("Input Image", image);
+            cv::imshow("Result (Masked) Image", resultImage);
         }
         else {
             int minHue = h - range, maxHue = h + range;
@@ -309,6 +376,10 @@ int identifyObject(cv::Mat image) {
             mask = createMask(image, lowerBound, upperBound);
 
             resultImage = applyMask(image, mask);
+
+
+            cv::imshow("Input Image", image);
+            cv::imshow("Result (Masked) Image", resultImage);
         }
 
         cv::imwrite("C:/Users/Sebastian WL/Desktop/Results/img.png", resultImage);
