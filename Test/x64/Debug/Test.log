@@ -1,0 +1,9 @@
+﻿  Test.cpp
+C:\opencv\build\include\opencv2\calib3d.hpp(1,1): warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
+  (compiling source file 'Test.cpp')
+  
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(56,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(104,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Test.vcxproj -> C:\Users\Sebastian WL\source\repos\Test\x64\Debug\Test.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
