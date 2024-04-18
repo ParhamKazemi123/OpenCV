@@ -223,16 +223,13 @@ cv::Mat applyMask(const cv::Mat& image, const cv::Mat& mask) {
     return resultImage;
 }
 
-int main() {
-    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/stop.jpg";
-    int range = 3;
-    cv::Mat image, resultImage;
+int identifyObject(cv::Mat image) {
+    int range = 3; 
+    cv::Mat resultImage;
     cv::Mat mask;
 
-    image = readImage(imgPath);
-
     //Exists to test the write contour functions
-    if (true){
+    if (true) {
         // Write contour of the central object
         writeContourAll(image);
 
@@ -245,9 +242,10 @@ int main() {
     }
 
     int hsvValue;
-    if (false){
+    if (false) {
         hsvValue = getHSV(image);
-    } else {
+    }
+    else {
         hsvValue = getAverageHSV(image);
     }
 
@@ -267,7 +265,7 @@ int main() {
         cv::Scalar lowerBound;
         cv::Scalar upperBound;
 
-        if (h < range || h > (180 - range)) {
+        if (h < range || h >(180 - range)) {
 
             cv::Scalar lowerBound2;
             cv::Scalar upperBound2;
@@ -316,6 +314,18 @@ int main() {
         cv::imwrite("C:/Users/Sebastian WL/Desktop/Results/img.png", resultImage);
     }
     waitKey(0);
+
+    return 0;
+}
+
+int main() {
+    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/stop.jpg";
+
+    cv::Mat image;
+
+    image = readImage(imgPath);
+
+    identifyObject(image);
 
     return 0;
 }
