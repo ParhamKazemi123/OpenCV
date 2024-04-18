@@ -1,0 +1,14 @@
+﻿  ObjectDetection.cpp
+C:\opencv\build\include\opencv2\calib3d.hpp(1,1): warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
+  (compiling source file 'ObjectDetection.cpp')
+  
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(56,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(102,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  main.cpp
+C:\opencv\build\include\opencv2\calib3d.hpp(1,1): warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
+  (compiling source file 'main.cpp')
+  
+  Generating Code...
+  main.vcxproj -> C:\Users\Sebastian WL\source\repos\main\x64\Debug\main.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
