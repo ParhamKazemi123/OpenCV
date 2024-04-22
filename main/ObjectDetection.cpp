@@ -1,18 +1,28 @@
 #include "ObjectDetection.hpp"
 
-std::vector<std::vector<cv::Point>> ObjectDetection::getContours(cv::Mat& image) {
+std::vector<std::vector<cv::Point>> getContours(cv::Mat& image) {
     cv::Mat gray;
     cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
 
     // Threshold the grayscale image to create a binary mask
     cv::Mat mask;
-    cv::threshold(gray, mask, 100, 255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
+    cv::threshold(gray, mask, 0, 255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
 
     // Find contours in the mask
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
-    return contours;
+    std::vector<std::vector<cv::Point>> filteredContours;
+    int minArea = 5000;
+
+    for (const auto& contour : contours) {
+        double area = contourArea(contour);
+        if (area >= minArea) {
+            filteredContours.push_back(contour);
+        }
+    }
+
+    return filteredContours;
 }
 
 cv::Mat ObjectDetection::findObject(cv::Mat image, int x, int y) {
@@ -55,12 +65,14 @@ int ObjectDetection::findObjectArea(cv::Mat image, int x, int y) {
     return area;
 }
 
-void ObjectDetection::writeContourAll(cv::Mat& image) {
+cv::Mat ObjectDetection::writeContourAll(cv::Mat& image) {
 
     std::vector<std::vector<cv::Point>> contours = getContours(image);
 
     // Draw contours on the original image
-    cv::drawContours(image, contours, -1, cv::Scalar(0, 255, 0), 0);
+    cv::drawContours(image, contours, -1, cv::Scalar(0, 255, 0), 15);
+
+    return image;
 }
 
 cv::Mat ObjectDetection::identifyCenterObject(cv::Mat image) {
@@ -91,7 +103,7 @@ cv::Mat ObjectDetection::identifyCenterObject(cv::Mat image) {
     }
 
     // Draw the contour of the center object onto the image
-    cv::drawContours(image, contours, centerContourIndex, cv::Scalar(0, 255, 0), 2);
+    cv::drawContours(image, contours, centerContourIndex, cv::Scalar(0, 255, 0), 20);
 
     return image;
 }
