@@ -13,7 +13,7 @@ std::vector<std::vector<cv::Point>> getContours(cv::Mat& image) {
     cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
     std::vector<std::vector<cv::Point>> filteredContours;
-    int minArea = 5000;
+    int minArea = 20000;
 
     for (const auto& contour : contours) {
         double area = contourArea(contour);
