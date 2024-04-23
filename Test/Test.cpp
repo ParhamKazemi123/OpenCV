@@ -3,18 +3,32 @@
 using namespace cv;
 
 std::vector<std::vector<cv::Point>> getContours(cv::Mat& image) {
+    //cv::Mat filteredImage;
+    //cv::bilateralFilter(image, filteredImage, 9, 75, 75);  // Adjust parameters as needed
+    //image = filteredImage;
+
     cv::Mat gray;
     cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
 
     // Threshold the grayscale image to create a binary mask
     cv::Mat mask;
-    cv::threshold(gray, mask, 100, 255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
+    cv::threshold(gray, mask, 0, 255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
 
     // Find contours in the mask
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
-    return contours;
+    std::vector<std::vector<cv::Point>> filteredContours;
+    int minArea = 1000;
+
+    for (const auto& contour : contours) {
+        double area = contourArea(contour);
+        if (area >= minArea) {
+            filteredContours.push_back(contour);
+        }
+    }
+
+    return filteredContours;
 }
 
 cv::Mat findObject(cv::Mat image, int x, int y) {
@@ -28,8 +42,8 @@ cv::Mat findObject(cv::Mat image, int x, int y) {
     for (const auto& contour : contours) {
         if (cv::pointPolygonTest(contour, point, false) >= 0) {
             // Draw the contour containing the specific pixel
-            cv::drawContours(image, std::vector<std::vector<cv::Point>>{contour}, -1, cv::Scalar(0, 255, 0), 2);
-            //cv::circle(image, point, 5, cv::Scalar(255, 0, 0), -1); // Draw the specific pixel
+            cv::drawContours(image, std::vector<std::vector<cv::Point>>{contour}, -1, cv::Scalar(0, 255, 0), 20);
+            cv::circle(image, point, 5, cv::Scalar(255, 0, 0), -1); // Draw the specific pixel
             break;
         }
     }
@@ -57,12 +71,14 @@ int findObjectArea(cv::Mat image, int x, int y) {
     return area;
 }
 
-void writeAllContour(cv::Mat& image) {
+cv::Mat writeAllContour(cv::Mat& image) {
     
     std::vector<std::vector<cv::Point>> contours = getContours(image);
 
     // Draw contours on the original image
-    cv::drawContours(image, contours, -1, cv::Scalar(0, 255, 0), 0);
+    cv::drawContours(image, contours, -1, cv::Scalar(0, 255, 0), 20);
+
+    return image;
 }
 
 void removeBackground(cv::Mat& image) {
@@ -148,7 +164,7 @@ cv::Mat identifyCenterObject(cv::Mat image) {
     }
 
     // Draw the contour of the center object onto the image
-    cv::drawContours(image, contours, centerContourIndex, cv::Scalar(0, 255, 0), 2);
+    cv::drawContours(image, contours, centerContourIndex, cv::Scalar(0, 255, 0), 20);
 
     return image;
 }
@@ -416,7 +432,7 @@ int identifyObjectTest(cv::Mat image) {
 }
 
 int main() {
-    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/stop.jpg";
+    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/blood.jpg";
 
     cv::Mat image;
 
@@ -424,14 +440,17 @@ int main() {
 
     if (false) {
         image = identifyObjectTest(image);
-    } else if (true){
+    } else if (false){
         image = identifyCenterObject(image);
         cv::imshow("Image", image);
 
         double area = identifyCenterObjectArea(image);
         std::cout << "Pixels in the object: " << area << std::endl;
-    } else {
+    } else if (false){
         writeAllContour(image);
+        cv::imshow("Image", image);
+    } else {
+        image = findObject(image, 100, 100);
         cv::imshow("Image", image);
     }
     waitKey(0);
