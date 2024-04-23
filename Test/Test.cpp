@@ -45,7 +45,17 @@ cv::Mat findObject(cv::Mat image, int x, int y) {
     // Create a point for the specific pixel
     cv::Point point(x, y);
 
-    std::vector<std::vector<cv::Point>> contours = getContours(image, 1, 1);
+    int hsvValue = getAverageHSV(image, x, y);
+    int h = (hsvValue >> 16) & 0xFF;
+    int s = (hsvValue >> 8) & 0xFF;
+    int v = hsvValue & 0xFF;
+
+    std::vector<std::vector<cv::Point>> contours;
+    if (s < 50) {
+        contours = getContours(image, 0, 1);
+    } else {
+        contours = getContours(image, 1, 1);
+    }
 
     // Check if the specific pixel is within any contour
     for (const auto& contour : contours) {
@@ -232,6 +242,21 @@ int getHSV(const cv::Mat srcImage) {
 }
 
 int getAverageHSV(const cv::Mat& image, int x, int y) {
+    int rows = image.rows;
+    int cols = image.cols;
+
+    if (x < 4) {
+        x = 4;
+    } 
+    if (y < 4) {
+        y = 4;
+    } 
+    if (x > rows - 4) {
+       x = rows - 4;
+    }
+    if (y > cols - 4) {
+        y = cols - 4;
+    }
     //Should maybe make it dependant on the size of the image
     // Calculate the region of interest (ROI) in the middle of the image
     int startX = x - 4;
