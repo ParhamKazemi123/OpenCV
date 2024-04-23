@@ -3,9 +3,10 @@ C:\opencv\build\include\opencv2\calib3d.hpp(1,1): warning C4819: The file contai
   (compiling source file 'Test.cpp')
   
 C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(71,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(128,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(136,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(158,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(94,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(116,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(124,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(146,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   Test.vcxproj -> C:\Users\Sebastian WL\source\repos\Test\x64\Debug\Test.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.
