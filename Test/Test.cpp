@@ -2,6 +2,17 @@
 #include <iostream>
 using namespace cv;
 
+int contourThickness(cv::Mat image) {
+    int rows = image.rows;
+    int cols = image.cols;
+
+    int thickness = 2;
+
+    thickness += (rows + cols) / 200;
+
+    return thickness;
+}
+
 cv::Mat readImage(const std::string& imgPath) {
     // Read the image
     cv::Mat image = cv::imread(imgPath, cv::IMREAD_COLOR);
@@ -45,25 +56,26 @@ int getHSV(const cv::Mat srcImage) {
 int getAverageHSV(const cv::Mat& image, int x, int y) {
     int rows = image.rows;
     int cols = image.cols;
+    int scale = 2;
 
-    if (x < 4) {
-        x = 4;
+    if (x < scale) {
+        x = scale;
     }
-    if (y < 4) {
-        y = 4;
+    if (y < scale) {
+        y = scale;
     }
-    if (x > rows - 4) {
-        x = rows - 4;
+    if (x > rows - scale) {
+        x = rows - scale;
     }
-    if (y > cols - 4) {
-        y = cols - 4;
+    if (y > cols - scale) {
+        y = cols - scale;
     }
     //Should maybe make it dependant on the size of the image
     // Calculate the region of interest (ROI) in the middle of the image
-    int startX = x - 4;
-    int endX = x + 4;
-    int startY = y - 4;
-    int endY = y + 4;
+    int startX = x - scale;
+    int endX = x + scale;
+    int startY = y - scale;
+    int endY = y + scale;
 
     // Initialize accumulators for HSV values
     double totalH = 0, totalS = 0, totalV = 0;
@@ -129,9 +141,9 @@ std::vector<std::vector<cv::Point>> getContours(cv::Mat& image, int invert, int 
     // Threshold the grayscale image to create a binary mask
     cv::Mat mask;
     if (invert == 0){
-        cv::threshold(gray, mask, 128, 255, cv::THRESH_OTSU);
+        cv::threshold(gray, mask, 0, 255, cv::THRESH_OTSU);
     } else {
-        cv::threshold(gray, mask, 128, 255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
+        cv::threshold(gray, mask, 0, 255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
     }
 
     // Find contours in the mask
@@ -177,7 +189,7 @@ cv::Mat findObject(cv::Mat image, int x, int y) {
     for (const auto& contour : contours) {
         if (cv::pointPolygonTest(contour, point, false) >= 0) {
             // Draw the contour containing the specific pixel
-            cv::drawContours(image, std::vector<std::vector<cv::Point>>{contour}, -1, cv::Scalar(0, 255, 0), 20);
+            cv::drawContours(image, std::vector<std::vector<cv::Point>>{contour}, -1, cv::Scalar(0, 255, 0), contourThickness(image));
             cv::circle(image, point, 5, cv::Scalar(255, 0, 0), -1); // Draw the specific pixel
             break;
         }
@@ -190,7 +202,18 @@ int findObjectArea(cv::Mat image, int x, int y) {
     // Create a point for the specific pixel
     cv::Point point(x, y);
 
-    std::vector<std::vector<cv::Point>> contours = getContours(image, 1, 1);
+    int hsvValue = getAverageHSV(image, x, y);
+    int h = (hsvValue >> 16) & 0xFF;
+    int s = (hsvValue >> 8) & 0xFF;
+    int v = hsvValue & 0xFF;
+
+    std::vector<std::vector<cv::Point>> contours;
+    if (s < 50) {
+        contours = getContours(image, 0, 1);
+    }
+    else {
+        contours = getContours(image, 1, 1);
+    }
     double area = 0;
 
     // Check if the specific pixel is within any contour
@@ -206,19 +229,19 @@ int findObjectArea(cv::Mat image, int x, int y) {
     return area;
 }
 
-cv::Mat identifyAllObjects(cv::Mat& image) {
+cv::Mat identifyAllObjects(cv::Mat& image, int invert) {
     
-    std::vector<std::vector<cv::Point>> contours = getContours(image, 1, 1);
+    std::vector<std::vector<cv::Point>> contours = getContours(image, invert, 1);
 
     // Draw contours on the original image
-    cv::drawContours(image, contours, -1, cv::Scalar(0, 255, 0), 20);
+    cv::drawContours(image, contours, -1, cv::Scalar(0, 255, 0), contourThickness(image));
 
     return image;
 }
 
-int identifyAllObjectAreas(cv::Mat& image) {
+int identifyAllObjectAreas(cv::Mat& image, int invert) {
 
-    std::vector<std::vector<cv::Point>> contours = getContours(image, 1, 1);
+    std::vector<std::vector<cv::Point>> contours = getContours(image, invert, 1);
 
     double area = 0;
 
@@ -287,7 +310,7 @@ cv::Mat identifyCenterObject(cv::Mat image) {
     }
 
     // Draw the contour of the center object onto the image
-    cv::drawContours(image, contours, centerContourIndex, cv::Scalar(0, 255, 0), 20);
+    cv::drawContours(image, contours, centerContourIndex, cv::Scalar(0, 255, 0), contourThickness(image));
 
     return image;
 }
@@ -321,6 +344,7 @@ cv::Mat identifyColor(cv::Mat image) {
     int range = 4;
     cv::Mat resultImage;
     cv::Mat mask;
+
     int hsvValue;
 
     int rows = image.rows;
@@ -330,7 +354,7 @@ cv::Mat identifyColor(cv::Mat image) {
         hsvValue = getHSV(image);
     }
 
-    hsvValue = getAverageHSV(image, rows / 2, cols / 2);
+    hsvValue = getAverageHSV(image, cols / 2, rows / 2);
 
     if (hsvValue != -1) {
         int h = (hsvValue >> 16) & 0xFF;
@@ -343,6 +367,15 @@ cv::Mat identifyColor(cv::Mat image) {
         if (s < 100) {
             minSat = 0;
             maxSat = s + 100;
+            if (s < 50) {
+                range = 30;
+                if (s < 25) {
+                    range = 60;
+                    if (s < 10) {
+                        range = 90;
+                    }
+                } 
+            }
         } else if (s > 155) {
             minSat = s - 100;
             maxSat = 255;
@@ -422,6 +455,15 @@ cv::Mat identifyColor(cv::Mat image, int x, int y) {
         if (s < 100) {
             minSat = 0;
             maxSat = s + 100;
+            if (s < 50) {
+                range = 30;
+                if (s < 25) {
+                    range = 60;
+                    if (s < 10) {
+                        range = 90;
+                    }
+                }
+            }
         }
         else if (s > 155) {
             minSat = s - 100;
@@ -486,15 +528,15 @@ cv::Mat identifyColor(cv::Mat image, int x, int y) {
 }
 
 int main() {
-    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/stop.jpg";
+    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/blood.jpg";
 
     cv::Mat image;
 
     image = readImage(imgPath);
 
-    if (true) {
+    if (false) {
         image = identifyColor(image);
-        identifyAllObjects(image);
+        identifyAllObjects(image, 0);
         cv::imshow("Image", image);
     } else if (false){
         image = identifyCenterObject(image);
@@ -502,8 +544,8 @@ int main() {
         double area = identifyCenterObjectArea(image);
         std::cout << "Pixels in the object: " << area << std::endl;
     } else if (true){
-        identifyAllObjects(image);
-        double area = identifyAllObjectAreas(image);
+        identifyAllObjects(image, 1);
+        double area = identifyAllObjectAreas(image, 1);
         std::cout << "Pixels in the objects: " << area << std::endl;
         cv::imshow("Image", image);
     } else if (false){
