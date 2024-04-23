@@ -179,7 +179,7 @@ cv::Mat findObject(cv::Mat image, int x, int y) {
     int v = hsvValue & 0xFF;
 
     std::vector<std::vector<cv::Point>> contours;
-    if (s < 50) {
+    if (s < 60) {
         contours = getContours(image, 0, 1);
     } else {
         contours = getContours(image, 1, 1);
@@ -362,19 +362,19 @@ cv::Mat identifyColor(cv::Mat image) {
         int v = hsvValue & 0xFF;
 
         int minSat, maxSat;
-        int minVal = 0, maxVal = 255;
+        int minVal, maxVal;
 
         if (s < 100) {
             minSat = 0;
             maxSat = s + 100;
-            if (s < 50) {
+            if (s < 40) {
                 range = 30;
-                if (s < 25) {
+                if (s < 20) {
                     range = 60;
                     if (s < 10) {
                         range = 90;
                     }
-                } 
+                }
             }
         } else if (s > 155) {
             minSat = s - 100;
@@ -382,6 +382,14 @@ cv::Mat identifyColor(cv::Mat image) {
         } else {
             minSat = s - 100;
             maxSat = s + 100;
+        }
+
+        if (v < 50) {
+            minVal = 0;
+            maxVal = v + 30;
+        } else {
+            minVal = 40;
+            maxVal = 255;
         }
 
         cv::Scalar lowerBound;
@@ -450,14 +458,14 @@ cv::Mat identifyColor(cv::Mat image, int x, int y) {
         int v = hsvValue & 0xFF;
 
         int minSat, maxSat;
-        int minVal = 0, maxVal = 255;
+        int minVal, maxVal;
 
         if (s < 100) {
             minSat = 0;
             maxSat = s + 100;
-            if (s < 50) {
+            if (s < 40) {
                 range = 30;
-                if (s < 25) {
+                if (s < 20) {
                     range = 60;
                     if (s < 10) {
                         range = 90;
@@ -472,6 +480,15 @@ cv::Mat identifyColor(cv::Mat image, int x, int y) {
         else {
             minSat = s - 100;
             maxSat = s + 100;
+        }
+
+        if (v < 50) {
+            minVal = 0;
+            maxVal = v + 30;
+        }
+        else {
+            minVal = 40;
+            maxVal = 255;
         }
 
         cv::Scalar lowerBound;
@@ -534,6 +551,7 @@ int main() {
 
     image = readImage(imgPath);
 
+    //Try using canny edge detection before contour detection
     if (false) {
         image = identifyColor(image);
         identifyAllObjects(image, 0);
