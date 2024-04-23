@@ -2,6 +2,122 @@
 #include <iostream>
 using namespace cv;
 
+cv::Mat readImage(const std::string& imgPath) {
+    // Read the image
+    cv::Mat image = cv::imread(imgPath, cv::IMREAD_COLOR);
+
+    if (image.empty()) {
+        std::cerr << "Error: Could not open the image file." << std::endl;
+        return cv::Mat();  // Return an empty Mat if the image could not be opened
+    }
+
+    return image;
+}
+
+int getHSV(const cv::Mat srcImage) {
+
+    if (srcImage.empty()) {
+        std::cerr << "Error: Could not open the image file." << std::endl;
+        return -1;
+    }
+
+    // Get image dimensions
+    int rows = srcImage.rows;
+    int cols = srcImage.cols;
+
+    // Calculate the coordinates of the pixel in the middle of the image
+    int centerX = cols / 2;
+    int centerY = rows / 2;
+
+    // Convert BGR to HSV
+    cv::Mat3b bgrImage(srcImage);
+    cv::Mat3b hsvImage;
+    cv::cvtColor(bgrImage, hsvImage, cv::COLOR_BGR2HSV);
+
+    // Get the HSV values of the pixel in the middle of the image
+    cv::Vec3b hsvColor = hsvImage(centerY, centerX);
+
+    int hsvValue = (hsvColor[0] << 16) | (hsvColor[1] << 8) | hsvColor[2];
+
+    return hsvValue;
+}
+
+int getAverageHSV(const cv::Mat& image, int x, int y) {
+    int rows = image.rows;
+    int cols = image.cols;
+
+    if (x < 4) {
+        x = 4;
+    }
+    if (y < 4) {
+        y = 4;
+    }
+    if (x > rows - 4) {
+        x = rows - 4;
+    }
+    if (y > cols - 4) {
+        y = cols - 4;
+    }
+    //Should maybe make it dependant on the size of the image
+    // Calculate the region of interest (ROI) in the middle of the image
+    int startX = x - 4;
+    int endX = x + 4;
+    int startY = y - 4;
+    int endY = y + 4;
+
+    // Initialize accumulators for HSV values
+    double totalH = 0, totalS = 0, totalV = 0;
+    int numPixels = 0;
+
+    // Iterate over the ROI to accumulate HSV values
+    for (int y = startY; y < endY; y++) {
+        for (int x = startX; x < endX; x++) {
+            cv::Vec3b bgrPixel = image.at<cv::Vec3b>(y, x);
+            cv::Mat bgrMat(1, 1, CV_8UC3);
+            bgrMat.at<cv::Vec3b>(0, 0) = bgrPixel;
+
+            cv::Mat hsvMat;
+            cv::cvtColor(bgrMat, hsvMat, cv::COLOR_BGR2HSV);
+
+            cv::Vec3b hsvPixel = hsvMat.at<cv::Vec3b>(0, 0);
+
+            totalH += hsvPixel[0];
+            totalS += hsvPixel[1];
+            totalV += hsvPixel[2];
+            numPixels++;
+        }
+    }
+
+    // Calculate average HSV values
+    int avgH = static_cast<int>(totalH / numPixels);
+    int avgS = static_cast<int>(totalS / numPixels);
+    int avgV = static_cast<int>(totalV / numPixels);
+
+    // Combine average HSV values into a single integer
+    int hsvValue = (avgH << 16) | (avgS << 8) | avgV;
+
+    return hsvValue;
+}
+
+cv::Mat createMask(const cv::Mat& inputImage, const cv::Scalar& lowerBound, const cv::Scalar& upperBound) {
+    // Convert image to HSV color space
+    cv::Mat inputImageHSV;
+    cv::cvtColor(inputImage, inputImageHSV, cv::COLOR_BGR2HSV);
+
+    // Create mask
+    cv::Mat mask;
+    cv::inRange(inputImageHSV, lowerBound, upperBound, mask);
+
+    return mask;
+}
+
+cv::Mat applyMask(const cv::Mat& image, const cv::Mat& mask) {
+    cv::Mat resultImage;
+    cv::bitwise_and(image, image, resultImage, mask);
+
+    return resultImage;
+}
+
 std::vector<std::vector<cv::Point>> getContours(cv::Mat& image, int invert, int retr) {
     //cv::Mat filteredImage;
     //cv::bilateralFilter(image, filteredImage, 9, 75, 75);  // Adjust parameters as needed
@@ -199,122 +315,6 @@ void removeBackground(cv::Mat& image) {
 
     // Update the original image with the result
     image = result;
-}
-
-cv::Mat readImage(const std::string& imgPath) {
-    // Read the image
-    cv::Mat image = cv::imread(imgPath, cv::IMREAD_COLOR);
-
-    if (image.empty()) {
-        std::cerr << "Error: Could not open the image file." << std::endl;
-        return cv::Mat();  // Return an empty Mat if the image could not be opened
-    }
-
-    return image;
-}
-
-int getHSV(const cv::Mat srcImage) {
-
-    if (srcImage.empty()) {
-        std::cerr << "Error: Could not open the image file." << std::endl;
-        return -1;
-    }
-
-    // Get image dimensions
-    int rows = srcImage.rows;
-    int cols = srcImage.cols;
-
-    // Calculate the coordinates of the pixel in the middle of the image
-    int centerX = cols / 2;
-    int centerY = rows / 2;
-
-    // Convert BGR to HSV
-    cv::Mat3b bgrImage(srcImage);
-    cv::Mat3b hsvImage;
-    cv::cvtColor(bgrImage, hsvImage, cv::COLOR_BGR2HSV);
-
-    // Get the HSV values of the pixel in the middle of the image
-    cv::Vec3b hsvColor = hsvImage(centerY, centerX);
-
-    int hsvValue = (hsvColor[0] << 16) | (hsvColor[1] << 8) | hsvColor[2];
-
-    return hsvValue;
-}
-
-int getAverageHSV(const cv::Mat& image, int x, int y) {
-    int rows = image.rows;
-    int cols = image.cols;
-
-    if (x < 4) {
-        x = 4;
-    } 
-    if (y < 4) {
-        y = 4;
-    } 
-    if (x > rows - 4) {
-       x = rows - 4;
-    }
-    if (y > cols - 4) {
-        y = cols - 4;
-    }
-    //Should maybe make it dependant on the size of the image
-    // Calculate the region of interest (ROI) in the middle of the image
-    int startX = x - 4;
-    int endX = x + 4;
-    int startY = y - 4;
-    int endY = y + 4;
-
-    // Initialize accumulators for HSV values
-    double totalH = 0, totalS = 0, totalV = 0;
-    int numPixels = 0;
-
-    // Iterate over the ROI to accumulate HSV values
-    for (int y = startY; y < endY; y++) {
-        for (int x = startX; x < endX; x++) {
-            cv::Vec3b bgrPixel = image.at<cv::Vec3b>(y, x);
-            cv::Mat bgrMat(1, 1, CV_8UC3);
-            bgrMat.at<cv::Vec3b>(0, 0) = bgrPixel;
-
-            cv::Mat hsvMat;
-            cv::cvtColor(bgrMat, hsvMat, cv::COLOR_BGR2HSV);
-
-            cv::Vec3b hsvPixel = hsvMat.at<cv::Vec3b>(0, 0);
-
-            totalH += hsvPixel[0];
-            totalS += hsvPixel[1];
-            totalV += hsvPixel[2];
-            numPixels++;
-        }
-    }
-
-    // Calculate average HSV values
-    int avgH = static_cast<int>(totalH / numPixels);
-    int avgS = static_cast<int>(totalS / numPixels);
-    int avgV = static_cast<int>(totalV / numPixels);
-
-    // Combine average HSV values into a single integer
-    int hsvValue = (avgH << 16) | (avgS << 8) | avgV;
-
-    return hsvValue;
-}
-
-cv::Mat createMask(const cv::Mat& inputImage, const cv::Scalar& lowerBound, const cv::Scalar& upperBound) {
-    // Convert image to HSV color space
-    cv::Mat inputImageHSV;
-    cv::cvtColor(inputImage, inputImageHSV, cv::COLOR_BGR2HSV);
-
-    // Create mask
-    cv::Mat mask;
-    cv::inRange(inputImageHSV, lowerBound, upperBound, mask);
-
-    return mask;
-}
-
-cv::Mat applyMask(const cv::Mat& image, const cv::Mat& mask) {
-    cv::Mat resultImage;
-    cv::bitwise_and(image, image, resultImage, mask);
-
-    return resultImage;
 }
 
 cv::Mat identifyColor(cv::Mat image) {
