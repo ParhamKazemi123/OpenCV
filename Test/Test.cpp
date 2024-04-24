@@ -137,18 +137,23 @@ cv::Mat applyMask(const cv::Mat& image, const cv::Mat& mask) {
 }
 
 std::vector<std::vector<cv::Point>> getContours(cv::Mat& image, int invert, int retr) {
-    cv::Mat gray;
-    cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
+    cv::Mat filteredImage;
+    cv::bilateralFilter(image, filteredImage, 9, 75, 75);  // Adjust parameters as needed
+    image = filteredImage;
 
-    cv::Mat equalizedImage;
-    cv::equalizeHist(gray, equalizedImage);
+    cv::Mat gray;
+    cv::cvtColor(filteredImage, gray, cv::COLOR_BGR2GRAY);
+
+    //cv::Mat equalizedImage;
+    //cv::equalizeHist(gray, equalizedImage);
 
     // Threshold the grayscale image to create a binary mask
+    
     cv::Mat mask;
     if (invert == 0){
-        cv::threshold(equalizedImage, mask, 0, 255, cv::THRESH_OTSU);
+        cv::threshold(gray, mask, 0, 255, cv::THRESH_OTSU);
     } else {
-        cv::threshold(equalizedImage, mask, 0, 255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
+        cv::threshold(gray, mask, 0, 255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
     }
 
     int padSize = 1; // adjust the padding size as needed
