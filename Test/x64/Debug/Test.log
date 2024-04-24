@@ -2,22 +2,22 @@
 C:\opencv\build\include\opencv2\calib3d.hpp(1,1): warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
   (compiling source file 'Test.cpp')
   
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(256,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(279,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(314,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(322,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(355,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(366,114): warning C4244: 'argument': conversion from 'double' to '_Tp', possible loss of data
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(366,114): warning C4244:         with
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(366,114): warning C4244:         [
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(366,114): warning C4244:             _Tp=float
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(366,114): warning C4244:         ]
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(366,57): warning C4244: 'argument': conversion from 'double' to '_Tp', possible loss of data
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(366,57): warning C4244:         with
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(366,57): warning C4244:         [
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(366,57): warning C4244:             _Tp=float
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(366,57): warning C4244:         ]
-C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(409,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(258,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(281,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(316,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(324,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(357,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(368,114): warning C4244: 'argument': conversion from 'double' to '_Tp', possible loss of data
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(368,114): warning C4244:         with
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(368,114): warning C4244:         [
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(368,114): warning C4244:             _Tp=float
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(368,114): warning C4244:         ]
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(368,57): warning C4244: 'argument': conversion from 'double' to '_Tp', possible loss of data
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(368,57): warning C4244:         with
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(368,57): warning C4244:         [
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(368,57): warning C4244:             _Tp=float
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(368,57): warning C4244:         ]
+C:\Users\Sebastian WL\source\repos\Test\Test\Test.cpp(411,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   Test.vcxproj -> C:\Users\Sebastian WL\source\repos\Test\x64\Debug\Test.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.
