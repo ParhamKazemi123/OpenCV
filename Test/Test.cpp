@@ -136,6 +136,23 @@ cv::Mat applyMask(const cv::Mat& image, const cv::Mat& mask) {
     return resultImage;
 }
 
+cv::Mat getEdges(cv::Mat image) {
+    cv::Mat gray;
+    cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
+
+    cv::Mat blurredImage;
+    cv::GaussianBlur(gray, blurredImage, cv::Size(5, 5), 1.5);
+
+    // Apply Canny edge detection
+    cv::Mat edges;
+    cv::Canny(blurredImage, edges, 50, 135);
+
+    cv::Mat dilatedEdges;
+    cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 1);
+
+    return dilatedEdges;
+}
+
 std::vector<std::vector<cv::Point>> getContours(cv::Mat& image, int invert, int retr) {
     //cv::Mat filteredImage;
     //cv::bilateralFilter(image, filteredImage, 9, 75, 75);  // Adjust parameters as needed
@@ -177,7 +194,7 @@ std::vector<std::vector<cv::Point>> getContours(cv::Mat& image, int invert, int 
 
     // Find contours in the mask
     std::vector<std::vector<cv::Point>> contours;
-    if (invert == 0) {
+    if (invert == 1) {
         cv::findContours(dilatedEdges, contours, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
     }
     else {
@@ -652,7 +669,7 @@ cv::Mat identifyColor(cv::Mat image, int x, int y) {
 }
 
 int main() {
-    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/can.webp";
+    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/sl.png";
 
     cv::Mat image;
 
@@ -663,13 +680,13 @@ int main() {
         image = identifyColor(image);
         identifyAllObjects(image, 0);
         cv::imshow("Image", image);
-    } else if (true){
+    } else if (false){
         identifyAllObjects(image, 1);
         double area = identifyAllObjectAreas(image, 1);
         std::cout << "Pixels in the objects: " << area << std::endl;
         cv::imshow("Image", image);
     } else if (false){
-        image = findObject(image, 100, 100);
+        image = findObject(image, 200, 130);
         int area = findObjectArea(image, 100, 100);
         std::cout << "Area of object: " << area << std::endl;
         cv::imshow("Image", image);
@@ -677,6 +694,9 @@ int main() {
         image = identifyCenterObject(image);
         std::string middle = findCenterOfObject(image);
         std::cout << "Middle point of object: " << middle << std::endl;
+        cv::imshow("Image", image);
+    } else if (true) {
+        image = getEdges(image);
         cv::imshow("Image", image);
     }
     waitKey(0);
