@@ -148,9 +148,48 @@ cv::Mat getEdges(cv::Mat image) {
     cv::Canny(blurredImage, edges, 50, 135);
 
     cv::Mat dilatedEdges;
-    cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 1);
+    cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 2 + ((image.rows + image.cols) / 1500));
 
     return dilatedEdges;
+}
+
+std::vector<std::vector<cv::Point>> getContours2(cv::Mat& image, int invert, int retr) {
+    cv::Mat filteredImage;
+    cv::bilateralFilter(image, filteredImage, 9, 75, 75);  // Adjust parameters as needed
+    image = filteredImage;
+
+    cv::Mat gray;
+    cv::cvtColor(filteredImage, gray, cv::COLOR_BGR2GRAY);
+
+    // Threshold the grayscale image to create a binary mask
+    cv::Mat mask;
+    if (invert == 0) {
+        cv::threshold(gray, mask, 0, 255, cv::THRESH_OTSU);
+    }
+    else {
+        cv::threshold(gray, mask, 0, 255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
+    }
+
+    // Find contours in the mask
+    std::vector<std::vector<cv::Point>> contours;
+    if (invert == 0) {
+        cv::findContours(mask, contours, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
+    }
+    else {
+        cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    }
+
+    std::vector<std::vector<cv::Point>> filteredContours;
+    int minArea = 1000;
+
+    for (const auto& contour : contours) {
+        double area = contourArea(contour);
+        if (area >= minArea) {
+            filteredContours.push_back(contour);
+        }
+    }
+
+    return filteredContours;
 }
 
 std::vector<std::vector<cv::Point>> getContours(cv::Mat& image, int invert, int retr) {
@@ -185,20 +224,17 @@ std::vector<std::vector<cv::Point>> getContours(cv::Mat& image, int invert, int 
     cv::Mat edges;
     cv::Canny(blurredImage, edges, 50, 135);
 
-    //cv::Rect roi(padSize, padSize, image.cols, image.rows);
-    //cv::Mat detectedEdges = edges(roi);
-
     // Apply dilation to enhance edges
     cv::Mat dilatedEdges;
-    cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 1);
+    cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 2 + ((image.rows + image.cols) / 1500));
 
     // Find contours in the mask
     std::vector<std::vector<cv::Point>> contours;
-    if (invert == 1) {
-        cv::findContours(dilatedEdges, contours, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
+    if (invert == 0) {
+        cv::findContours(dilatedEdges, contours, cv::RETR_CCOMP, cv::CHAIN_APPROX_NONE);
     }
     else {
-        cv::findContours(dilatedEdges, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+        cv::findContours(dilatedEdges, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
     }
 
     std::vector<std::vector<cv::Point>> filteredContours;
@@ -669,7 +705,7 @@ cv::Mat identifyColor(cv::Mat image, int x, int y) {
 }
 
 int main() {
-    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/sl.png";
+    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/test3.jpg";
 
     cv::Mat image;
 
@@ -680,11 +716,12 @@ int main() {
         image = identifyColor(image);
         identifyAllObjects(image, 0);
         cv::imshow("Image", image);
-    } else if (false){
+    } else if (true){
         identifyAllObjects(image, 1);
         double area = identifyAllObjectAreas(image, 1);
         std::cout << "Pixels in the objects: " << area << std::endl;
         cv::imshow("Image", image);
+        cv::imwrite("C:/Users/Sebastian WL/Desktop/Results/img.jpg", image);
     } else if (false){
         image = findObject(image, 200, 130);
         int area = findObjectArea(image, 100, 100);
@@ -698,6 +735,7 @@ int main() {
     } else if (true) {
         image = getEdges(image);
         cv::imshow("Image", image);
+        cv::imwrite("C:/Users/Sebastian WL/Desktop/Results/img.jpg", image);
     }
     waitKey(0);
 
