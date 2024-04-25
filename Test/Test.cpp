@@ -164,7 +164,7 @@ std::vector<std::vector<cv::Point>> getContours(cv::Mat& image, int invert, int 
 
     // Apply dilation to enhance edges
     cv::Mat dilatedEdges;
-    cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 8);
+    cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 2);
 
     // Find contours in the mask
     std::vector<std::vector<cv::Point>> contours;
@@ -236,7 +236,7 @@ void removeNewestContour() {
 }
 
 
-int findArea(cv::Mat image) {
+int findArea() {
     double area = 0;
 
     //Calculate total area of all contours
@@ -446,7 +446,7 @@ cv::Mat identifyCenterObject(cv::Mat image) {
 }
 
 int main() {
-    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/test3.jpg";
+    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/blood.jpg";
 
     cv::Mat image;
 
@@ -460,10 +460,11 @@ int main() {
         cv::imshow("Image", image);
         cv::imwrite("C:/Users/Sebastian WL/Desktop/Results/img.jpg", image);
     } else if (true){
-        image = findObject(image, 1400, 1800);
-        int area = findObjectArea(image, 1400, 1800);
-        std::cout << "Area of object: " << area << std::endl;
+        image = findObject(image, 170, 130);
+        image = findObject(image, 230, 140);
         cv::imshow("Image", image);
+        int area = findArea(image);
+        std::cout << "Area of object: " << area << std::endl;
         cv::imwrite("C:/Users/Sebastian WL/Desktop/Results/img.jpg", image);
     } else if (false) {
         image = identifyCenterObject(image);
