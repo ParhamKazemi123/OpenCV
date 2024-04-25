@@ -229,12 +229,13 @@ void clearContourList() {
 }
 
 // Function to remove the newest contour from the list (if not empty)
-void removeNewestContour() {
+void removeNewestContour(cv::Mat image) {
     if (!contoursList.empty()) {
         contoursList.pop_back(); // Remove the most recently added contour
     }
-}
 
+    cv::drawContours(image, contoursList, -1, cv::Scalar(0, 255, 0), contourThickness(image));
+}
 
 int findArea() {
     double area = 0;
@@ -463,7 +464,7 @@ int main() {
         image = findObject(image, 170, 130);
         image = findObject(image, 230, 140);
         cv::imshow("Image", image);
-        int area = findArea(image);
+        int area = findArea();
         std::cout << "Area of object: " << area << std::endl;
         cv::imwrite("C:/Users/Sebastian WL/Desktop/Results/img.jpg", image);
     } else if (false) {
