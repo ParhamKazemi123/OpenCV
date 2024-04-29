@@ -10,7 +10,7 @@ int main() {
 
     ObjectDetection detection;
 
-    ObjectInfo info = detection.findObjectInfo(image, 100, 100);
+    ObjectInfo info = detection.CenterObjectInfo(image);
 
     // Print area and center points
     std::cout << "Area: " << info.area << std::endl;

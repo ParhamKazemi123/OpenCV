@@ -40,7 +40,7 @@ ObjectInfo ObjectDetection::findObjectInfo(cv::Mat image, int x, int y) {
 
     std::vector<std::vector<cv::Point>> contours = getContours(image);
     double area = 0;
-    cv::Point center;
+    cv::Point center(0, 0);
     ObjectInfo info;
 
     // Check if the specific pixel is within any contour
@@ -69,6 +69,48 @@ ObjectInfo ObjectDetection::findObjectInfo(cv::Mat image, int x, int y) {
             break;
         }
     }
+
+    return info;
+}
+
+ObjectInfo ObjectDetection::CenterObjectInfo(cv::Mat image) {
+
+    std::vector<std::vector<cv::Point>> contours = getContours(image);
+    double area = 0;
+    cv::Point center(0, 0);
+    ObjectInfo info;
+
+    // Calculate centroids of contours
+    std::vector<cv::Moments> mu(contours.size());
+    for (size_t i = 0; i < contours.size(); i++) {
+        mu[i] = cv::moments(contours[i]);
+    }
+
+    // Find the contour corresponding to the object in the center
+    cv::Point2f imageCenter(static_cast<float>(image.cols / 2), static_cast<float>(image.rows / 2));
+    int centerContourIndex = -1;
+    float minDist = std::numeric_limits<float>::max();
+
+    for (size_t i = 0; i < contours.size(); i++) {
+        cv::Point2f centroid(static_cast<float>(mu[i].m10 / mu[i].m00), static_cast<float>(mu[i].m01 / mu[i].m00));
+        float dist = cv::norm(imageCenter - centroid);
+
+        if (dist < minDist) {
+            minDist = dist;
+            centerContourIndex = static_cast<int>(i);
+            center.x = mu[i].m10 / mu[i].m00;
+            center.y = mu[i].m01 / mu[i].m00;
+            area = cv::contourArea(contours[i]);
+        }
+    }
+
+    // Draw the contour of the center object onto the image
+    cv::drawContours(image, contours, centerContourIndex, cv::Scalar(0, 255, 0), 2 + ((image.rows + image.cols) / 200));
+
+
+    info.area = area;
+    info.image = image;
+    info.center = center;
 
     return info;
 }

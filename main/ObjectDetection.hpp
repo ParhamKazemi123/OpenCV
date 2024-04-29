@@ -16,6 +16,7 @@ public:
     int findObjectArea(cv::Mat image, int x, int y);
 
     ObjectInfo findObjectInfo(cv::Mat image, int x, int y);
+    ObjectInfo CenterObjectInfo(cv::Mat image);
 
 private:
     std::vector<std::vector<cv::Point>> getContours(cv::Mat& image);
