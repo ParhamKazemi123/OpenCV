@@ -5,25 +5,6 @@ using namespace cv;
 // Global vector to store contours
 std::vector<std::vector<cv::Point>> contoursList;
 
-// Function to add a contour to the list if it's not a duplicate
-void addContour(const std::vector<cv::Point>& contour) {
-    // Check for duplicate contours
-    if (std::find(contoursList.begin(), contoursList.end(), contour) == contoursList.end()) {
-        contoursList.push_back(contour);
-    }
-}
-
-int contourThickness(cv::Mat image) {
-    int rows = image.rows;
-    int cols = image.cols;
-
-    int thickness = 2;
-
-    thickness += (rows + cols) / 200;
-
-    return thickness;
-}
-
 cv::Mat padImage(const cv::Mat& src, int padSize) {
     cv::Mat padded;
     cv::copyMakeBorder(src, padded, padSize, padSize, padSize, padSize, cv::BORDER_CONSTANT, 0);
@@ -140,21 +121,16 @@ cv::Mat getEdges(cv::Mat image) {
     cv::Canny(blurredImage, edges, 50, 135);
 
     cv::Mat dilatedEdges;
-    cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 8);
-    //cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 2 + ((image.rows + image.cols) / 1500));
+    cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 2 + ((image.rows + image.cols) / 1500));
 
     return dilatedEdges;
 }
 
-std::vector<std::vector<cv::Point>> getContours(cv::Mat& image, int invert, int retr) {
-    //cv::Mat filteredImage;
-    //cv::bilateralFilter(image, filteredImage, 9, 75, 75);  // Adjust parameters as needed
-    //image = filteredImage;
+std::vector<std::vector<cv::Point>> getContours(cv::Mat& image) {
 
     cv::Mat gray;
     cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
 
-    // Threshold the grayscale image to create a binary mask
     cv::Mat blurredImage;
     cv::GaussianBlur(gray, blurredImage, cv::Size(1, 1), 0, 0);
 
@@ -164,19 +140,14 @@ std::vector<std::vector<cv::Point>> getContours(cv::Mat& image, int invert, int 
 
     // Apply dilation to enhance edges
     cv::Mat dilatedEdges;
-    cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 2);
+    cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 2 + ((image.rows + image.cols) / 1500));
 
     // Find contours in the mask
     std::vector<std::vector<cv::Point>> contours;
-    if (invert == 0) {
-        cv::findContours(dilatedEdges, contours, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
-    }
-    else {
-        cv::findContours(dilatedEdges, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-    }
+    cv::findContours(dilatedEdges, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
     std::vector<std::vector<cv::Point>> filteredContours;
-    int minArea = 1000;
+    int minArea = 2000;
 
     for (const auto& contour : contours) {
         double area = contourArea(contour);
@@ -193,33 +164,32 @@ cv::Mat findObject(cv::Mat image, int x, int y) {
     // Create a point for the specific pixel
     cv::Point point(x, y);
 
-    int hsvValue = getAverageHSV(image, x, y);
-    int h = (hsvValue >> 16) & 0xFF;
-    int s = (hsvValue >> 8) & 0xFF;
-    int v = hsvValue & 0xFF;
+    std::vector<std::vector<cv::Point>> contours = getContours(image);
 
-    std::vector<std::vector<cv::Point>> contours;
-    if (s < 60) {
-        contours = getContours(image, 0, 1);
-    } else {
-        contours = getContours(image, 1, 1);
+    //check if the sent point is already in a contour
+    for (const auto& contour : contoursList) {
+        if (cv::pointPolygonTest(contour, point, false) >= 0) {
+
+            cv::drawContours(image, std::vector<std::vector<cv::Point>>{contour}, -1, cv::Scalar(0, 255, 0), 2 + ((image.rows + image.cols) / 200));
+
+            return image;
+        }
     }
 
+    // One problem is that smaller contours could still be added to larger ones, which could cause problems
     // Check if the specific pixel is within any contour
     for (const auto& contour : contours) {
         if (cv::pointPolygonTest(contour, point, false) >= 0) {
-            
-            //cv::drawContours(image, std::vector<std::vector<cv::Point>>{contour}, -1, cv::Scalar(0, 255, 0), contourThickness(image));
 
             //Add contour to the list
-            addContour(contour);
+            contoursList.push_back(contour);
             cv::circle(image, point, 5, cv::Scalar(255, 0, 0), -1); // Draw the specific pixel
             break;
         }
     }
 
     // Draw the contours containing the specific pixels
-    cv::drawContours(image, contoursList, -1, cv::Scalar(0, 255, 0), contourThickness(image));
+    cv::drawContours(image, contoursList, -1, cv::Scalar(0, 255, 0), 2 + ((image.rows + image.cols) / 200));
 
     return image;
 }
@@ -234,7 +204,7 @@ void removeNewestContour(cv::Mat image) {
         contoursList.pop_back(); // Remove the most recently added contour
     }
 
-    cv::drawContours(image, contoursList, -1, cv::Scalar(0, 255, 0), contourThickness(image));
+    cv::drawContours(image, contoursList, -1, cv::Scalar(0, 255, 0), 2 + ((image.rows + image.cols) / 200));
 }
 
 int findArea() {
@@ -255,18 +225,7 @@ int findObjectArea(cv::Mat image, int x, int y) {
     // Create a point for the specific pixel
     cv::Point point(x, y);
 
-    int hsvValue = getAverageHSV(image, x, y);
-    int h = (hsvValue >> 16) & 0xFF;
-    int s = (hsvValue >> 8) & 0xFF;
-    int v = hsvValue & 0xFF;
-
-    std::vector<std::vector<cv::Point>> contours;
-    if (s < 50) {
-        contours = getContours(image, 0, 1);
-    }
-    else {
-        contours = getContours(image, 1, 1);
-    }
+    std::vector<std::vector<cv::Point>> contours = getContours(image);
     double area = 0;
 
     // Check if the specific pixel is within any contour
@@ -282,19 +241,19 @@ int findObjectArea(cv::Mat image, int x, int y) {
     return area;
 }
 
-cv::Mat identifyAllObjects(cv::Mat& image, int invert) {
+cv::Mat identifyAllObjects(cv::Mat& image) {
     
-    std::vector<std::vector<cv::Point>> contours = getContours(image, invert, 1);
+    std::vector<std::vector<cv::Point>> contours = getContours(image);
 
     // Draw contours on the original image
-    cv::drawContours(image, contours, -1, cv::Scalar(0, 255, 0), contourThickness(image));
+    cv::drawContours(image, contours, -1, cv::Scalar(0, 255, 0), 2 + ((image.rows + image.cols) / 200));
 
     return image;
 }
 
 int identifyAllObjectAreas(cv::Mat& image, int invert) {
 
-    std::vector<std::vector<cv::Point>> contours = getContours(image, invert, 1);
+    std::vector<std::vector<cv::Point>> contours = getContours(image);
 
     double area = 0;
 
@@ -309,18 +268,7 @@ int identifyCenterObjectArea(cv::Mat image) {
     int rows = image.rows / 2;
     int cols = image.cols / 2;
 
-    int hsvValue = getAverageHSV(image, cols, rows);
-    int h = (hsvValue >> 16) & 0xFF;
-    int s = (hsvValue >> 8) & 0xFF;
-    int v = hsvValue & 0xFF;
-
-    std::vector<std::vector<cv::Point>> contours;
-    if (s < 60) {
-        contours = getContours(image, 0, 1);
-    }
-    else {
-        contours = getContours(image, 1, 1);
-    }
+    std::vector<std::vector<cv::Point>> contours = getContours(image);
 
     // Calculate centroids of contours
     std::vector<cv::Moments> mu(contours.size());
@@ -352,18 +300,7 @@ std::string findCenterOfObject(cv::Mat image) {
     int rows = image.rows / 2;
     int cols = image.cols / 2;
 
-    int hsvValue = getAverageHSV(image, cols, rows);
-    int h = (hsvValue >> 16) & 0xFF;
-    int s = (hsvValue >> 8) & 0xFF;
-    int v = hsvValue & 0xFF;
-
-    std::vector<std::vector<cv::Point>> contours;
-    if (s < 60) {
-        contours = getContours(image, 0, 1);
-    }
-    else {
-        contours = getContours(image, 1, 1);
-    }
+    std::vector<std::vector<cv::Point>> contours = getContours(image);
 
     // Calculate centroids of contours
     std::vector<cv::Moments> mu(contours.size());
@@ -406,18 +343,7 @@ cv::Mat identifyCenterObject(cv::Mat image) {
     int rows = image.rows / 2;
     int cols = image.cols / 2;
 
-    int hsvValue = getAverageHSV(image, cols, rows);
-    int h = (hsvValue >> 16) & 0xFF;
-    int s = (hsvValue >> 8) & 0xFF;
-    int v = hsvValue & 0xFF;
-
-    std::vector<std::vector<cv::Point>> contours;
-    if (s < 60) {
-        contours = getContours(image, 0, 1);
-    }
-    else {
-        contours = getContours(image, 1, 1);
-    }
+    std::vector<std::vector<cv::Point>> contours = getContours(image);
 
     // Calculate centroids of contours
     std::vector<cv::Moments> mu(contours.size());
@@ -441,7 +367,7 @@ cv::Mat identifyCenterObject(cv::Mat image) {
     }
 
     // Draw the contour of the center object onto the image
-    cv::drawContours(image, contours, centerContourIndex, cv::Scalar(0, 255, 0), contourThickness(image));
+    cv::drawContours(image, contours, centerContourIndex, cv::Scalar(0, 255, 0), 2 + ((image.rows + image.cols) / 200));
 
     return image;
 }
@@ -455,7 +381,7 @@ int main() {
     
     //use box outlines to show objects
     if (false){
-        identifyAllObjects(image, 1);
+        identifyAllObjects(image);
         double area = identifyAllObjectAreas(image, 1);
         std::cout << "Pixels in the objects: " << area << std::endl;
         cv::imshow("Image", image);
