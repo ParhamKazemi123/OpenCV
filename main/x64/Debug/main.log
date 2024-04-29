@@ -2,17 +2,36 @@
 C:\opencv\build\include\opencv2\calib3d.hpp(1,1): warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
   (compiling source file 'ObjectDetection.cpp')
   
-C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(229,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(62,37): warning C4267: '/=': conversion from 'size_t' to '_Tp', possible loss of data
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(62,37): warning C4267:         with
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(62,37): warning C4267:         [
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(62,37): warning C4267:             _Tp=int
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(62,37): warning C4267:         ]
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(63,37): warning C4267: '/=': conversion from 'size_t' to '_Tp', possible loss of data
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(63,37): warning C4267:         with
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(63,37): warning C4267:         [
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(63,37): warning C4267:             _Tp=int
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(63,37): warning C4267:         ]
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(113,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(135,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(143,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(165,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(196,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(207,114): warning C4244: 'argument': conversion from 'double' to '_Tp', possible loss of data
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(207,114): warning C4244:         with
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(207,114): warning C4244:         [
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(207,114): warning C4244:             _Tp=float
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(207,114): warning C4244:         ]
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(207,57): warning C4244: 'argument': conversion from 'double' to '_Tp', possible loss of data
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(207,57): warning C4244:         with
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(207,57): warning C4244:         [
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(207,57): warning C4244:             _Tp=float
+C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(207,57): warning C4244:         ]
   main.cpp
-C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(249,41): error C2374: 'contours': redefinition; multiple initialization
-  C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(241,41):
-  see declaration of 'contours'
-  
-C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(267,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
-C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(302,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(310,12): warning C4244: 'return': conversion from 'double' to 'int', possible loss of data
-C:\Users\Sebastian WL\source\repos\main\main\ObjectDetection.cpp(332,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 C:\opencv\build\include\opencv2\calib3d.hpp(1,1): warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
   (compiling source file 'main.cpp')
   
   Generating Code...
+  main.vcxproj -> C:\Users\Sebastian WL\source\repos\main\x64\Debug\main.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
