@@ -1,5 +1,22 @@
 #include "ObjectDetection.hpp"
 
+void ObjectDetection::drawWeightedContour(cv::Mat image, std::vector<cv::Point> contour) {
+    cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC1);
+    std::vector<std::vector<cv::Point>> contours = { contour };
+    cv::drawContours(mask, contours, -1, cv::Scalar(255), cv::FILLED);
+
+    // Create an opaque version of the original image
+    cv::Mat overlayedImage = image.clone();
+
+    // Apply the mask to the overlayed image
+    overlayedImage.setTo(contourColor, mask);
+
+    // Blend the overlayed image with the original image
+    double alpha = 0.4;
+    cv::addWeighted(overlayedImage, alpha, image, 1.0 - alpha, 0, image);
+    cv::drawContours(image, contours, -1, contourColor, 2 + ((image.rows + image.cols) / 200));
+}
+
 std::vector<std::vector<cv::Point>> ObjectDetection::getContours(cv::Mat& image) {
 
     cv::Mat gray;
@@ -18,7 +35,7 @@ std::vector<std::vector<cv::Point>> ObjectDetection::getContours(cv::Mat& image)
     cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 2 + ((image.rows + image.cols) / 1500));
 
     // Find contours in the mask
-    std::vector<std::vector<cv::Point>> contours;
+    std::vector<std::vector<cv::Point>> contours; 
     cv::findContours(dilatedEdges, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
     std::vector<std::vector<cv::Point>> filteredContours;
@@ -51,8 +68,8 @@ ObjectInfo ObjectDetection::findObjectInfo(cv::Mat image, int x, int y) {
             area = cv::contourArea(contour);
 
             // Draw the contour containing the specific pixel
-            cv::drawContours(image, std::vector<std::vector<cv::Point>>{contour}, -1, cv::Scalar(0, 255, 0), 2 + ((image.rows + image.cols) / 200));
-            cv::circle(image, point, 5, cv::Scalar(255, 0, 0), -1); // Draw the specific pixel
+            drawWeightedContour(image, contour);
+            cv::circle(image, point, 5, cv::Scalar(0, 0, 255), -1); // Draw the specific pixel
 
             // Calculate center
             center = cv::Point(0, 0);
@@ -105,7 +122,7 @@ ObjectInfo ObjectDetection::CenterObjectInfo(cv::Mat image) {
     }
 
     // Draw the contour of the center object onto the image
-    cv::drawContours(image, contours, centerContourIndex, cv::Scalar(0, 255, 0), 2 + ((image.rows + image.cols) / 200));
+    drawWeightedContour(image, contours[centerContourIndex]);
 
 
     info.area = area;
@@ -126,8 +143,8 @@ cv::Mat ObjectDetection::findObject(cv::Mat image, int x, int y) {
     for (const auto& contour : contours) {
         if (cv::pointPolygonTest(contour, point, false) >= 0) {
             // Draw the contour containing the specific pixel
-            cv::drawContours(image, std::vector<std::vector<cv::Point>>{contour}, -1, cv::Scalar(0, 255, 0), 2 + ((image.rows + image.cols) / 200));
-            cv::circle(image, point, 5, cv::Scalar(255, 0, 0), -1); // Draw the specific pixel
+            drawWeightedContour(image, contour);
+            cv::circle(image, point, 5, cv::Scalar(0, 0, 255), -1); // Draw the specific pixel
             break;
         }
     }
@@ -213,7 +230,7 @@ cv::Mat ObjectDetection::identifyCenterObject(cv::Mat image) {
     }
 
     // Draw the contour of the center object onto the image
-    cv::drawContours(image, contours, centerContourIndex, cv::Scalar(0, 255, 0), 2 + ((image.rows + image.cols) / 200));
+    drawWeightedContour(image, contours[centerContourIndex]);
 
     return image;
 }

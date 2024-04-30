@@ -19,6 +19,8 @@ public:
     ObjectInfo CenterObjectInfo(cv::Mat image);
 
 private:
+    cv::Scalar contourColor = cv::Scalar(222, 181, 255);
+    void drawWeightedContour(cv::Mat image, std::vector<cv::Point> contour);
     std::vector<std::vector<cv::Point>> getContours(cv::Mat& image);
 };
 
