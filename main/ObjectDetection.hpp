@@ -3,7 +3,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <iostream>
-#include "ObjectInfo.hpp"
+//#include "ObjectInfo.hpp"
 using namespace cv;
 
 class ObjectDetection {
@@ -15,8 +15,10 @@ public:
     cv::Mat findObject(cv::Mat image, int x, int y);
     int findObjectArea(cv::Mat image, int x, int y);
 
-    ObjectInfo findObjectInfo(cv::Mat image, int x, int y);
-    ObjectInfo CenterObjectInfo(cv::Mat image);
+    cv::Mat getEdges(cv::Mat image);
+
+    //ObjectInfo findObjectInfo(cv::Mat image, int x, int y);
+    //ObjectInfo CenterObjectInfo(cv::Mat image);
 
 private:
     cv::Scalar contourColor = cv::Scalar(222, 181, 255);

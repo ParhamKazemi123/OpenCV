@@ -17,6 +17,23 @@ void ObjectDetection::drawWeightedContour(cv::Mat image, std::vector<cv::Point> 
     cv::drawContours(image, contours, -1, contourColor, 2 + ((image.rows + image.cols) / 200));
 }
 
+cv::Mat ObjectDetection::getEdges(cv::Mat image) {
+    cv::Mat gray;
+    cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
+
+    cv::Mat blurredImage;
+    cv::GaussianBlur(gray, blurredImage, cv::Size(1, 1), 0, 0);
+
+    // Apply Canny edge detection
+    cv::Mat edges;
+    cv::Canny(blurredImage, edges, 50, 135);
+
+    cv::Mat dilatedEdges;
+    cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 2 + ((image.rows + image.cols) / 1500));
+
+    return dilatedEdges;
+}
+
 std::vector<std::vector<cv::Point>> ObjectDetection::getContours(cv::Mat& image) {
 
     cv::Mat gray;
@@ -39,7 +56,7 @@ std::vector<std::vector<cv::Point>> ObjectDetection::getContours(cv::Mat& image)
     cv::findContours(dilatedEdges, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
     std::vector<std::vector<cv::Point>> filteredContours;
-    int minArea = 1000;
+    int minArea = 2000;
 
     for (const auto& contour : contours) {
         double area = contourArea(contour);
@@ -51,6 +68,7 @@ std::vector<std::vector<cv::Point>> ObjectDetection::getContours(cv::Mat& image)
     return filteredContours;
 }
 
+/*
 ObjectInfo ObjectDetection::findObjectInfo(cv::Mat image, int x, int y) {
     // Create a point for the specific pixel
     cv::Point point(x, y);
@@ -131,6 +149,7 @@ ObjectInfo ObjectDetection::CenterObjectInfo(cv::Mat image) {
 
     return info;
 }
+*/
 
 cv::Mat ObjectDetection::findObject(cv::Mat image, int x, int y) {
 

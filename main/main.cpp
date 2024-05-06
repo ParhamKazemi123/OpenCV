@@ -10,14 +10,15 @@ int main() {
 
     ObjectDetection detection;
 
-    ObjectInfo info = detection.CenterObjectInfo(image);
+    //ObjectInfo info = detection.CenterObjectInfo(image);
+    image = detection.getEdges(image);
 
     // Print area and center points
-    std::cout << "Area: " << info.area << std::endl;
-    std::cout << "Center Point: (" << info.center.x << ", " << info.center.y << ")" << std::endl;
+    //std::cout << "Area: " << info.area << std::endl;
+    //std::cout << "Center Point: (" << info.center.x << ", " << info.center.y << ")" << std::endl;
 
     // Display the image
-    cv::imshow("Image with Contours", info.image);
+    cv::imshow("Image with Contours", image);
     cv::waitKey(0); // Wait for a key press before closing the window
 
     return 0;

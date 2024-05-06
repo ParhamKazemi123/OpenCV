@@ -1,3 +1,4 @@
+/*
 #ifndef OBJECTINFO_HPP
 #define OBJECTINFO_HPP
 
@@ -12,3 +13,4 @@ public:
 };
 
 #endif // OBJECTINFO_HPP
+*/
