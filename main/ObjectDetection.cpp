@@ -1,15 +1,15 @@
 #include "ObjectDetection.hpp"
 
 double ObjectDetection::getArea() {
-    return info.area;
+    return areaInfo;
 }
 
 cv::Mat ObjectDetection::getImage() {
-    return info.image;
+    return imageInfo;
 }
 
 cv::Point ObjectDetection::getCenter() {
-    return info.center;
+    return centerInfo;
 }
 
 void ObjectDetection::drawWeightedContour(cv::Mat image, std::vector<cv::Point> contour) {
@@ -87,7 +87,6 @@ void ObjectDetection::findObjectInfo(cv::Mat image, int x, int y) {
     std::vector<std::vector<cv::Point>> contours = getContours(image);
     double area = 0;
     cv::Point center(0, 0);
-    info;
 
     // Check if the specific pixel is within any contour
     for (const auto& contour : contours) {
@@ -108,9 +107,9 @@ void ObjectDetection::findObjectInfo(cv::Mat image, int x, int y) {
             center.x /= contour.size();
             center.y /= contour.size();
 
-            info.area = area;
-            info.image = image;
-            info.center = center;
+            areaInfo = area;
+            imageInfo = image;
+            centerInfo = center;
 
             break;
         }
@@ -122,7 +121,6 @@ void ObjectDetection::centerObjectInfo(cv::Mat image) {
     std::vector<std::vector<cv::Point>> contours = getContours(image);
     double area = 0;
     cv::Point center(0, 0);
-    ObjectInfo info;
 
     // Calculate centroids of contours
     std::vector<cv::Moments> mu(contours.size());
@@ -151,10 +149,9 @@ void ObjectDetection::centerObjectInfo(cv::Mat image) {
     // Draw the contour of the center object onto the image
     drawWeightedContour(image, contours[centerContourIndex]);
 
-
-    info.area = area;
-    info.image = image;
-    info.center = center;
+    areaInfo = area;
+    imageInfo = image;
+    centerInfo = center;
 }
 
 cv::Mat ObjectDetection::findObject(cv::Mat image, int x, int y) {

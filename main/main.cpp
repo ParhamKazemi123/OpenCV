@@ -1,6 +1,5 @@
 #include <opencv2/opencv.hpp>
 #include "ObjectDetection.hpp"
-#include "ObjectInfo.hpp"
 using namespace cv;
 
 int main() {
@@ -10,14 +9,14 @@ int main() {
 
     ObjectDetection detection;
 
-    ObjectInfo info = detection.CenterObjectInfo(image);
+    detection.centerObjectInfo(image);
 
-    Print area and center points
-    std::cout << "Area: " << info.area << std::endl;
-    std::cout << "Center Point: (" << info.center.x << ", " << info.center.y << ")" << std::endl;
+    //Print area and center points
+    std::cout << "Area: " << detection.getArea() << std::endl;
+    std::cout << "Center Point: (" << detection.getCenter().x << ", " << detection.getCenter().y << ")" << std::endl;
 
     // Display the image
-    cv::imshow("Image with Contours", info.image);
+    cv::imshow("Image with Contours", detection.getImage());
     cv::waitKey(0); // Wait for a key press before closing the window
 
     return 0;

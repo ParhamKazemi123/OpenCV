@@ -3,7 +3,6 @@
 
 #include <opencv2/opencv.hpp>
 #include <iostream>
-#include "ObjectInfo.hpp"
 using namespace cv;
 
 class ObjectDetection {
@@ -25,7 +24,10 @@ public:
     void centerObjectInfo(cv::Mat image);
 
 private:
-    ObjectInfo info;
+    double areaInfo;
+    cv::Mat imageInfo;
+    cv::Point centerInfo;
+
     cv::Scalar contourColor = cv::Scalar(222, 181, 255);
     void drawWeightedContour(cv::Mat image, std::vector<cv::Point> contour);
     std::vector<std::vector<cv::Point>> getContours(cv::Mat& image);
