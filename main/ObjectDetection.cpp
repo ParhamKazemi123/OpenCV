@@ -26,7 +26,7 @@ void ObjectDetection::drawWeightedContour(cv::Mat image, std::vector<cv::Point> 
     // Blend the overlayed image with the original image
     double alpha = 0.4;
     cv::addWeighted(overlayedImage, alpha, image, 1.0 - alpha, 0, image);
-    cv::drawContours(image, contours, -1, contourColor, 2 + ((image.rows + image.cols) / 200));
+    cv::drawContours(image, contours, -1, contourColor, 1 + ((image.rows + image.cols) / 400));
 }
 
 cv::Mat ObjectDetection::getEdges(cv::Mat image) {
@@ -96,7 +96,8 @@ void ObjectDetection::findObjectInfo(cv::Mat image, int x, int y) {
             area = cv::contourArea(contour);
 
             // Draw the contour containing the specific pixel
-            drawWeightedContour(image, contour);
+            //drawWeightedContour(image, contour);
+            cv::drawContours(image, contour, -1, contourColor, 1 + ((image.rows + image.cols) / 400));
             cv::circle(image, point, 5, cv::Scalar(0, 0, 255), -1); // Draw the specific pixel
 
             // Calculate center
@@ -148,6 +149,7 @@ void ObjectDetection::centerObjectInfo(cv::Mat image) {
 
     // Draw the contour of the center object onto the image
     drawWeightedContour(image, contours[centerContourIndex]);
+    //cv::drawContours(image, contours, centerContourIndex, contourColor, 1 + ((image.rows + image.cols) / 400));
 
     areaInfo = area;
     imageInfo = image;
@@ -166,6 +168,7 @@ cv::Mat ObjectDetection::findObject(cv::Mat image, int x, int y) {
         if (cv::pointPolygonTest(contour, point, false) >= 0) {
             // Draw the contour containing the specific pixel
             drawWeightedContour(image, contour);
+            //cv::drawContours(image, contours, -1, contourColor, 1 + ((image.rows + image.cols) / 400));
             cv::circle(image, point, 5, cv::Scalar(0, 0, 255), -1); // Draw the specific pixel
             break;
         }
@@ -251,7 +254,7 @@ cv::Mat ObjectDetection::identifyCenterObject(cv::Mat image) {
         }
     }
 
-    // Draw the contour of the center object onto the image
+    //Draw the contour of the center object onto the image
     drawWeightedContour(image, contours[centerContourIndex]);
 
     return image;

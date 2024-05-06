@@ -138,7 +138,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjectDetection.hpp" />
-    <ClInclude Include="ObjectInfo.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
