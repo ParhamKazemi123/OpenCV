@@ -5,10 +5,39 @@ using namespace cv;
 // Global vector to store contours
 std::vector<std::vector<cv::Point>> contoursList;
 
-cv::Mat padImage(const cv::Mat& src, int padSize) {
-    cv::Mat padded;
-    cv::copyMakeBorder(src, padded, padSize, padSize, padSize, padSize, cv::BORDER_CONSTANT, 0);
-    return padded;
+cv::Scalar contourColor = cv::Scalar(222, 181, 255);
+
+int areaInfo;
+cv::Mat imageInfo;
+cv::Point centerInfo;
+
+double getArea() {
+    return areaInfo;
+}
+
+cv::Mat getImage() {
+    return imageInfo;
+}
+
+cv::Point getCenter() {
+    return centerInfo;
+}
+
+void drawWeightedContour(cv::Mat image, std::vector<cv::Point> contour) {
+    cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC1);
+    std::vector<std::vector<cv::Point>> contours = { contour };
+    cv::drawContours(mask, contours, -1, cv::Scalar(255), cv::FILLED);
+
+    // Create an opaque version of the original image
+    cv::Mat overlayedImage = image.clone();
+
+    // Apply the mask to the overlayed image
+    overlayedImage.setTo(contourColor, mask);
+
+    // Blend the overlayed image with the original image
+    double alpha = 0.4;
+    cv::addWeighted(overlayedImage, alpha, image, 1.0 - alpha, 0, image);
+    cv::drawContours(image, contours, -1, contourColor, 1 + ((image.rows + image.cols) / 400));
 }
 
 cv::Mat readImage(const std::string& imgPath) {
@@ -189,7 +218,7 @@ cv::Mat findObject(cv::Mat image, int x, int y) {
     }
 
     // Draw the contours containing the specific pixels
-    cv::drawContours(image, contoursList, -1, cv::Scalar(0, 255, 0), 2 + ((image.rows + image.cols) / 200));
+    cv::drawContours(image, contoursList, -1, contourColor, 2 + ((image.rows + image.cols) / 200));
 
     return image;
 }
@@ -204,7 +233,7 @@ void removeNewestContour(cv::Mat image) {
         contoursList.pop_back(); // Remove the most recently added contour
     }
 
-    cv::drawContours(image, contoursList, -1, cv::Scalar(0, 255, 0), 2 + ((image.rows + image.cols) / 200));
+    cv::drawContours(image, contoursList, -1, contourColor, 2 + ((image.rows + image.cols) / 200));
 }
 
 int findArea() {
@@ -221,54 +250,47 @@ int findArea() {
     return area;
 }
 
-int findObjectArea(cv::Mat image, int x, int y) {
+void findObjectInfo(cv::Mat image, int x, int y) {
     // Create a point for the specific pixel
     cv::Point point(x, y);
 
     std::vector<std::vector<cv::Point>> contours = getContours(image);
     double area = 0;
+    cv::Point center(0, 0);
 
     // Check if the specific pixel is within any contour
     for (const auto& contour : contours) {
         if (cv::pointPolygonTest(contour, point, false) >= 0) {
-            //Find the area of the object
+
+            // Calculate the area
             area = cv::contourArea(contour);
+
+            // Draw the contour containing the specific pixel
+            drawWeightedContour(image, contour);
+            cv::circle(image, point, 5, cv::Scalar(0, 0, 255), -1); // Draw the specific pixel
+
+            // Calculate center
+            center = cv::Point(0, 0);
+            for (const auto& p : contour) {
+                center += p;
+            }
+            center.x /= contour.size();
+            center.y /= contour.size();
+
+            areaInfo = area;
+            imageInfo = image;
+            centerInfo = center;
 
             break;
         }
     }
-
-    return area;
 }
 
-cv::Mat identifyAllObjects(cv::Mat& image) {
-    
-    std::vector<std::vector<cv::Point>> contours = getContours(image);
-
-    // Draw contours on the original image
-    cv::drawContours(image, contours, -1, cv::Scalar(0, 255, 0), 2 + ((image.rows + image.cols) / 200));
-
-    return image;
-}
-
-int identifyAllObjectAreas(cv::Mat& image, int invert) {
+void centerObjectInfo(cv::Mat image) {
 
     std::vector<std::vector<cv::Point>> contours = getContours(image);
-
     double area = 0;
-
-    for (const auto& contour : contours) {
-        area += cv::contourArea(contour);
-    }
-
-    return area;
-}
-
-int identifyCenterObjectArea(cv::Mat image) {
-    int rows = image.rows / 2;
-    int cols = image.cols / 2;
-
-    std::vector<std::vector<cv::Point>> contours = getContours(image);
+    cv::Point center(0, 0);
 
     // Calculate centroids of contours
     std::vector<cv::Moments> mu(contours.size());
@@ -281,95 +303,25 @@ int identifyCenterObjectArea(cv::Mat image) {
     int centerContourIndex = -1;
     float minDist = std::numeric_limits<float>::max();
 
-    double area = 0;
-
     for (size_t i = 0; i < contours.size(); i++) {
         cv::Point2f centroid(static_cast<float>(mu[i].m10 / mu[i].m00), static_cast<float>(mu[i].m01 / mu[i].m00));
         float dist = cv::norm(imageCenter - centroid);
 
         if (dist < minDist) {
             minDist = dist;
+            centerContourIndex = static_cast<int>(i);
+            center.x = mu[i].m10 / mu[i].m00;
+            center.y = mu[i].m01 / mu[i].m00;
             area = cv::contourArea(contours[i]);
         }
     }
 
-    return area;
-}
-
-std::string findCenterOfObject(cv::Mat image) {
-    int rows = image.rows / 2;
-    int cols = image.cols / 2;
-
-    std::vector<std::vector<cv::Point>> contours = getContours(image);
-
-    // Calculate centroids of contours
-    std::vector<cv::Moments> mu(contours.size());
-    for (size_t i = 0; i < contours.size(); i++) {
-        mu[i] = cv::moments(contours[i]);
-    }
-
-    // Find the contour corresponding to the object closest to the center
-    cv::Point2f imageCenter(static_cast<float>(image.cols / 2), static_cast<float>(image.rows / 2));
-    int centerContourIndex = -1;
-    float minDist = std::numeric_limits<float>::max();
-
-    for (size_t i = 0; i < contours.size(); i++) {
-        cv::Point2f centroid(static_cast<float>(mu[i].m10 / mu[i].m00), static_cast<float>(mu[i].m01 / mu[i].m00));
-        float dist = cv::norm(imageCenter - centroid);
-
-        if (dist < minDist) {
-            minDist = dist;
-            centerContourIndex = static_cast<int>(i);
-        }
-    }
-
-    // Return the centroid of the closest object
-    cv::Point2f center;
-    if (centerContourIndex != -1) {
-        center = cv::Point2f(mu[centerContourIndex].m10 / mu[centerContourIndex].m00, mu[centerContourIndex].m01 / mu[centerContourIndex].m00);
-    }
-    else {
-        center = cv::Point2f(-1, -1); // Return invalid point if no object found
-    }
-
-    std::ostringstream oss;
-    oss << center.x << ", " << center.y;
-    std::string ret = oss.str();
-
-    return ret;
-}
-
-cv::Mat identifyCenterObject(cv::Mat image) {
-    int rows = image.rows / 2;
-    int cols = image.cols / 2;
-
-    std::vector<std::vector<cv::Point>> contours = getContours(image);
-
-    // Calculate centroids of contours
-    std::vector<cv::Moments> mu(contours.size());
-    for (size_t i = 0; i < contours.size(); i++) {
-        mu[i] = cv::moments(contours[i]);
-    }
-
-    // Find the contour corresponding to the object in the center
-    cv::Point2f imageCenter(static_cast<float>(image.cols / 2), static_cast<float>(image.rows / 2));
-    int centerContourIndex = -1;
-    float minDist = std::numeric_limits<float>::max();
-
-    for (size_t i = 0; i < contours.size(); i++) {
-        cv::Point2f centroid(static_cast<float>(mu[i].m10 / mu[i].m00), static_cast<float>(mu[i].m01 / mu[i].m00));
-        float dist = cv::norm(imageCenter - centroid);
-
-        if (dist < minDist) {
-            minDist = dist;
-            centerContourIndex = static_cast<int>(i);
-        }
-    }
-
     // Draw the contour of the center object onto the image
-    cv::drawContours(image, contours, centerContourIndex, cv::Scalar(0, 255, 0), 2 + ((image.rows + image.cols) / 200));
+    drawWeightedContour(image, contours[centerContourIndex]);
 
-    return image;
+    areaInfo = area;
+    imageInfo = image;
+    centerInfo = center;
 }
 
 int main() {
@@ -380,12 +332,10 @@ int main() {
     image = readImage(imgPath);
     
     //use box outlines to show objects
-    if (false){
-        identifyAllObjects(image);
-        double area = identifyAllObjectAreas(image, 1);
-        std::cout << "Pixels in the objects: " << area << std::endl;
+    /*
+    if (true){
+        centerObjectInfo(image);
         cv::imshow("Image", image);
-        cv::imwrite("C:/Users/Sebastian WL/Desktop/Results/img.jpg", image);
     } else if (true){
         image = findObject(image, 170, 130);
         image = findObject(image, 230, 140);
@@ -403,6 +353,7 @@ int main() {
         cv::imshow("Image", image);
         cv::imwrite("C:/Users/Sebastian WL/Desktop/Results/img.jpg", image);
     }
+    */
     waitKey(0);
 
     return 0;
