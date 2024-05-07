@@ -1,5 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
+#include <chrono>
 using namespace cv;
 
 // Global vector to store contours
@@ -52,105 +53,19 @@ cv::Mat readImage(const std::string& imgPath) {
     return image;
 }
 
-int getHSV(const cv::Mat srcImage) {
-
-    if (srcImage.empty()) {
-        std::cerr << "Error: Could not open the image file." << std::endl;
-        return -1;
-    }
-
-    // Get image dimensions
-    int rows = srcImage.rows;
-    int cols = srcImage.cols;
-
-    // Calculate the coordinates of the pixel in the middle of the image
-    int centerX = cols / 2;
-    int centerY = rows / 2;
-
-    // Convert BGR to HSV
-    cv::Mat3b bgrImage(srcImage);
-    cv::Mat3b hsvImage;
-    cv::cvtColor(bgrImage, hsvImage, cv::COLOR_BGR2HSV);
-
-    // Get the HSV values of the pixel in the middle of the image
-    cv::Vec3b hsvColor = hsvImage(centerY, centerX);
-
-    int hsvValue = (hsvColor[0] << 16) | (hsvColor[1] << 8) | hsvColor[2];
-
-    return hsvValue;
-}
-
-int getAverageHSV(const cv::Mat& image, int x, int y) {
-    int rows = image.rows;
-    int cols = image.cols;
-    int scale = 2;
-
-    if (x < scale) {
-        x = scale;
-    }
-    if (y < scale) {
-        y = scale;
-    }
-    if (x > rows - scale) {
-        x = rows - scale;
-    }
-    if (y > cols - scale) {
-        y = cols - scale;
-    }
-    //Should maybe make it dependant on the size of the image
-    // Calculate the region of interest (ROI) in the middle of the image
-    int startX = x - scale;
-    int endX = x + scale;
-    int startY = y - scale;
-    int endY = y + scale;
-
-    // Initialize accumulators for HSV values
-    double totalH = 0, totalS = 0, totalV = 0;
-    int numPixels = 0;
-
-    // Iterate over the ROI to accumulate HSV values
-    for (int y = startY; y < endY; y++) {
-        for (int x = startX; x < endX; x++) {
-            cv::Vec3b bgrPixel = image.at<cv::Vec3b>(y, x);
-            cv::Mat bgrMat(1, 1, CV_8UC3);
-            bgrMat.at<cv::Vec3b>(0, 0) = bgrPixel;
-
-            cv::Mat hsvMat;
-            cv::cvtColor(bgrMat, hsvMat, cv::COLOR_BGR2HSV);
-
-            cv::Vec3b hsvPixel = hsvMat.at<cv::Vec3b>(0, 0);
-
-            totalH += hsvPixel[0];
-            totalS += hsvPixel[1];
-            totalV += hsvPixel[2];
-            numPixels++;
-        }
-    }
-
-    // Calculate average HSV values
-    int avgH = static_cast<int>(totalH / numPixels);
-    int avgS = static_cast<int>(totalS / numPixels);
-    int avgV = static_cast<int>(totalV / numPixels);
-
-    // Combine average HSV values into a single integer
-    int hsvValue = (avgH << 16) | (avgS << 8) | avgV;
-
-    return hsvValue;
-}
-
 cv::Mat getEdges(cv::Mat image) {
     cv::Mat gray;
     cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
 
     cv::Mat blurredImage;
-    cv::GaussianBlur(gray, blurredImage, cv::Size(1, 1), 0, 0);
+    cv::GaussianBlur(gray, blurredImage, cv::Size(1, 1), 5, 5);
 
     // Apply Canny edge detection
     cv::Mat edges;
-    cv::Canny(blurredImage, edges, 50, 135);
+    cv::Canny(blurredImage, edges, 30, 60);
 
     cv::Mat dilatedEdges;
-    cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 2 + ((image.rows + image.cols) / 1500));
+    cv::dilate(edges, dilatedEdges, cv::Mat(), cv::Point(-1, -1), 1 + ((image.rows + image.cols) / 1500));
 
     return dilatedEdges;
 }
@@ -266,7 +181,8 @@ void findObjectInfo(cv::Mat image, int x, int y) {
             area = cv::contourArea(contour);
 
             // Draw the contour containing the specific pixel
-            drawWeightedContour(image, contour);
+            //drawWeightedContour(image, contour);
+            cv::drawContours(image, contour, -1, contourColor, 1 + ((image.rows + image.cols) / 400));
             cv::circle(image, point, 5, cv::Scalar(0, 0, 255), -1); // Draw the specific pixel
 
             // Calculate center
@@ -287,7 +203,6 @@ void findObjectInfo(cv::Mat image, int x, int y) {
 }
 
 void centerObjectInfo(cv::Mat image) {
-
     std::vector<std::vector<cv::Point>> contours = getContours(image);
     double area = 0;
     cv::Point center(0, 0);
@@ -317,7 +232,8 @@ void centerObjectInfo(cv::Mat image) {
     }
 
     // Draw the contour of the center object onto the image
-    drawWeightedContour(image, contours[centerContourIndex]);
+    //drawWeightedContour(image, contours[centerContourIndex]);
+    cv::drawContours(image, contours, centerContourIndex, contourColor, 1 + ((image.rows + image.cols) / 400));
 
     areaInfo = area;
     imageInfo = image;
@@ -325,35 +241,44 @@ void centerObjectInfo(cv::Mat image) {
 }
 
 int main() {
-    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/blood.jpg";
+    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/test2.jpg";
 
     cv::Mat image;
 
     image = readImage(imgPath);
+
+    auto start = std::chrono::high_resolution_clock::now();
     
     //use box outlines to show objects
-    /*
-    if (true){
+    if (false){
         centerObjectInfo(image);
         cv::imshow("Image", image);
-    } else if (true){
+    } else if (false){
         image = findObject(image, 170, 130);
         image = findObject(image, 230, 140);
         cv::imshow("Image", image);
         int area = findArea();
         std::cout << "Area of object: " << area << std::endl;
         cv::imwrite("C:/Users/Sebastian WL/Desktop/Results/img.jpg", image);
-    } else if (false) {
-        image = identifyCenterObject(image);
-        std::string middle = findCenterOfObject(image);
-        std::cout << "Middle point of object: " << middle << std::endl;
-        cv::imshow("Image", image);
+
     } else if (true) {
+        //centerObjectInfo(image);
+        findObjectInfo(image, image.cols / 2, image.rows / 2);
+        //getEdges(image);
+        //getContours(image);
+        cv::imshow("Image", image);
+        cv::imwrite("C:/Users/Sebastian WL/Desktop/Results/img.jpg", image);
+    } else if (false) {
         image = getEdges(image);
         cv::imshow("Image", image);
         cv::imwrite("C:/Users/Sebastian WL/Desktop/Results/img.jpg", image);
     }
-    */
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+    std::cout << "Execution time: " << duration.count() << " microseconds" << std::endl;
+
     waitKey(0);
 
     return 0;
