@@ -11,6 +11,8 @@ int main() {
 
     detection.centerObjectInfo(image);
 
+    //detection.identifyCenterObject(image);
+
     //Print area and center points
     std::cout << "Area: " << detection.getArea() << std::endl;
     std::cout << "Center Point: (" << detection.getCenter().x << ", " << detection.getCenter().y << ")" << std::endl;

@@ -81,6 +81,8 @@ std::vector<std::vector<cv::Point>> ObjectDetection::getContours(cv::Mat& image)
 }
 
 void ObjectDetection::findObjectInfo(cv::Mat image, int x, int y) {
+    imageInfo = image;
+
     // Create a point for the specific pixel
     cv::Point point(x, y);
 
@@ -148,8 +150,10 @@ void ObjectDetection::centerObjectInfo(cv::Mat image) {
     }
 
     // Draw the contour of the center object onto the image
-    drawWeightedContour(image, contours[centerContourIndex]);
-    //cv::drawContours(image, contours, centerContourIndex, contourColor, 1 + ((image.rows + image.cols) / 400));
+    if (centerContourIndex > -1) {
+        //drawWeightedContour(image, contours[centerContourIndex]);
+        cv::drawContours(image, contours, centerContourIndex, contourColor, 1 + ((image.rows + image.cols) / 400));
+    }
 
     areaInfo = area;
     imageInfo = image;
@@ -167,8 +171,8 @@ cv::Mat ObjectDetection::findObject(cv::Mat image, int x, int y) {
     for (const auto& contour : contours) {
         if (cv::pointPolygonTest(contour, point, false) >= 0) {
             // Draw the contour containing the specific pixel
-            drawWeightedContour(image, contour);
-            //cv::drawContours(image, contours, -1, contourColor, 1 + ((image.rows + image.cols) / 400));
+            //drawWeightedContour(image, contour);
+            cv::drawContours(image, contours, -1, contourColor, 1 + ((image.rows + image.cols) / 400));
             cv::circle(image, point, 5, cv::Scalar(0, 0, 255), -1); // Draw the specific pixel
             break;
         }
@@ -250,12 +254,14 @@ cv::Mat ObjectDetection::identifyCenterObject(cv::Mat image) {
 
         if (dist < minDist) {
             minDist = dist;
-            centerContourIndex = static_cast<int>(i);
+            centerContourIndex = i;
         }
     }
 
     //Draw the contour of the center object onto the image
-    drawWeightedContour(image, contours[centerContourIndex]);
+    if (centerContourIndex > -1){
+        drawWeightedContour(image, contours[centerContourIndex]);
+    }
 
     return image;
 }

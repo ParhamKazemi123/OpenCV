@@ -8,9 +8,9 @@ std::vector<std::vector<cv::Point>> contoursList;
 
 cv::Scalar contourColor = cv::Scalar(222, 181, 255);
 
-int areaInfo;
+int areaInfo = 0;
 cv::Mat imageInfo;
-cv::Point centerInfo;
+cv::Point centerInfo(0, 0);
 
 double getArea() {
     return areaInfo;
@@ -166,6 +166,8 @@ int findArea() {
 }
 
 void findObjectInfo(cv::Mat image, int x, int y) {
+    imageInfo = image;
+
     // Create a point for the specific pixel
     cv::Point point(x, y);
 
@@ -182,7 +184,7 @@ void findObjectInfo(cv::Mat image, int x, int y) {
 
             // Draw the contour containing the specific pixel
             //drawWeightedContour(image, contour);
-            cv::drawContours(image, contour, -1, contourColor, 1 + ((image.rows + image.cols) / 400));
+            cv::drawContours(image, std::vector<std::vector<cv::Point>>{contour}, -1, contourColor, 1 + ((image.rows + image.cols) / 400));
             cv::circle(image, point, 5, cv::Scalar(0, 0, 255), -1); // Draw the specific pixel
 
             // Calculate center
@@ -203,6 +205,7 @@ void findObjectInfo(cv::Mat image, int x, int y) {
 }
 
 void centerObjectInfo(cv::Mat image) {
+
     std::vector<std::vector<cv::Point>> contours = getContours(image);
     double area = 0;
     cv::Point center(0, 0);
@@ -232,8 +235,10 @@ void centerObjectInfo(cv::Mat image) {
     }
 
     // Draw the contour of the center object onto the image
-    //drawWeightedContour(image, contours[centerContourIndex]);
-    cv::drawContours(image, contours, centerContourIndex, contourColor, 1 + ((image.rows + image.cols) / 400));
+    if (centerContourIndex > -1) {
+        //drawWeightedContour(image, contours[centerContourIndex]);
+        cv::drawContours(image, contours, centerContourIndex, contourColor, 1 + ((image.rows + image.cols) / 400));
+    }
 
     areaInfo = area;
     imageInfo = image;
@@ -241,7 +246,7 @@ void centerObjectInfo(cv::Mat image) {
 }
 
 int main() {
-    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/test2.jpg";
+    std::string imgPath = "C:/Users/Sebastian WL/Desktop/Images/blood.jpg";
 
     cv::Mat image;
 
@@ -253,7 +258,7 @@ int main() {
     if (false){
         centerObjectInfo(image);
         cv::imshow("Image", image);
-    } else if (false){
+    } else if (true){
         image = findObject(image, 170, 130);
         image = findObject(image, 230, 140);
         cv::imshow("Image", image);
